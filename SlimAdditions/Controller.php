@@ -2,73 +2,44 @@
 
 namespace SlimAdditions;
 
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\ResponseInterface as Response;
+
 class Controller
 {
-    protected $app;
+    protected $request;
+    protected $response;
+    protected $params = array();
 
-    public function __construct($app)
+    public function __construct(\Slim\Container $container)
     {
-        $this->app = $app;
+        $this->request = $container['request'];
+        $this->response = $container['response'];
     }
 
-    protected function setHeader($header, $value)
+    protected function header($header, $value = null)
     {
-        $this->app->response->headers->set($header, $value);
-    }
-
-    protected function setLayout($layout)
-    {
-        $this->app->view->setLayout($layout);
-    }
-
-    protected function render($name, $data = array())
-    {
-        return $this->app->render($name, $data);
-    }
-
-    protected function flash($key, $value)
-    {
-        $this->app->flash($key, $value);
-    }
-
-    protected function flashNow($key, $value)
-    {
-        $this->app->flashNow($key, $value);
-    }
-
-    protected function redirect($url, $params = null)
-    {
-        if ($params !== null) {
-            $url = $this->app->urlFor($url, $params);
+        if (is_null($value)) {
+            return $this->request->getHeader($header);
+        } else {
+            $this->response = $this->response->withHeader($header, $value);
         }
-        return $this->app->redirect($url);
     }
 
-    protected function params($name = null)
+    protected function params($param = null)
     {
-        list($content_type) = explode(";", $this->app->request->getContentType(), 2);
-
-        if ($content_type == "application/json") {
-            $body = json_decode($this->app->request()->getBody(), true);
+        if (empty($this->params)) {
+            $query_string = $this->request->getQueryParams();
+            $body = $this->request->getParsedBody();
             $body = !is_null($body) ? $body : array();
-            $data = array_merge($this->app->request->params(), $body);
-            if (is_null($name)) {
-                return $data;
-            } else {
-                return isset($data[$name]) ? $data[$name] : null;
-            }
+            $this->params = array_merge($query_string, $body);
         }
 
-        return $this->app->request->params($name);
+        return is_null($param) ? $this->params : $this->params[$param];
     }
 
-    protected function urlFor($name, $params = array())
+    public function render($data, $status = 200, $encoding_options = 0)
     {
-        return $this->app->router->urlFor($name, $params);
-    }
-
-    protected function pass()
-    {
-        $this->app->pass();
+        return is_null($data) ? $this->response->withStatus($status) : $this->response->withJson($data, $status, $encoding_options);
     }
 }
