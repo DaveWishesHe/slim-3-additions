@@ -4,11 +4,7 @@
     "description": "Add controller classes, etc to Slim Framework",
     "keywords": ["microframework","rest","router"],
     "require": {
-        "php": ">=5.3.0",
-        "slim/slim": "2.*"
-    },
-    "require-dev": {
-        "squizlabs/php_codesniffer": "2.0.*"
+        "slim/slim": "^3.0@RC"
     },
     "autoload": {
         "psr-0": { "SlimAdditions": "." }

@@ -4,7 +4,6 @@ namespace SlimAdditions;
 
 class RouteGenerator
 {
-    private $controller_cache = array();
     private $app;
 
     public function __construct($app)
@@ -14,61 +13,21 @@ class RouteGenerator
 
     private function permissions($controller_name, $method)
     {
-        if (!isset($this->permissions_cache[$controller_name])) {
-            $class_name = "\\App\\Permissions\\" . $controller_name;
-            $this->permissions_cache[$controller_name] = new $class_name($this->app);
-        }
-
-        return array($this->permissions_cache[$controller_name], "check");
+        return '\\App\\Permissions\\' . $controller_name . ':check';
     }
 
-    private function action($controller_name, $method)
+    private function request($controller_name, $method)
     {
-        if (!isset($this->controller_cache[$controller_name])) {
-            $class_name = '\\App\\Controllers\\' . $controller_name;
-            $this->controller_cache[$controller_name] = new $class_name($this->app);
-        }
-
-        return array($this->controller_cache[$controller_name], $method);
+        return '\\App\\Controllers\\' . $controller_name . ":" . $method;
     }
 
-    private function get($url, $controller, $action)
+    private function route($http_method, $url, $controller, $action)
     {
-        return $this->app->get($url, $this->permissions($controller, $action), $this->action($controller, $action));
+        return $this->app->$http_method($url, $this->request($controller, $action))->add($this->permissions($controller, $action));
     }
 
-    private function patch($url, $controller, $action)
+    public function loadRoutes($path = "config/routes.php")
     {
-        return $this->app->patch($url, $this->permissions($controller, $action), $this->action($controller, $action));
-    }
-
-    private function post($url, $controller, $action)
-    {
-        return $this->app->post($url, $this->permissions($controller, $action), $this->action($controller, $action));
-    }
-
-    private function put($url, $controller, $action)
-    {
-        return $this->app->put($url, $this->permissions($controller, $action), $this->action($controller, $action));
-    }
-
-    private function delete($url, $controller, $action)
-    {
-        return $this->app->delete($url, $this->permissions($controller, $action), $this->action($controller, $action));
-    }
-
-    private function options($url, $controller, $action)
-    {
-        return $this->app->options($url, $this->action($controller, $action));
-    }
-
-    private function defaultConditions($conditions)
-    {
-        \Slim\Route::setDefaultConditions($conditions);
-    }
-
-    public function loadRoutes()
-    {
-        include 'config/routes.php';
+        include $path;
     }
 }
