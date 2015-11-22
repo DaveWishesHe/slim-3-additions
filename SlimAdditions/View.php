@@ -1,5 +1,5 @@
 <?php
-
+//TODO: Reimplement for Slim 3...?
 namespace SlimAdditions;
 
 class View extends \Slim\View

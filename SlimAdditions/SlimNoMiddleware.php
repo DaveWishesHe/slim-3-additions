@@ -1,5 +1,5 @@
 <?php
-
+// TODO: Reimplement for Slim 3...?
 namespace SlimAdditions;
 
 class SlimNoMiddleware extends \Slim\Slim
